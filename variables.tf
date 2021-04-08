@@ -18,14 +18,14 @@ variable "storage_buckets" {
   type = list(object({
     name = string
     region = string
-    acl = string
-    cors = list(object({
+    acl = optional(string)
+    corsRules = list(object({
       allowedOrigins = list(string)
       allowedMethods = optional(list(string))
       allowedHeaders = optional(list(string))
       maxAgeSeconds = optional(number)
     }))
-    versioningEnabled = bool
+    versioningEnabled = optional(bool)
     versioningRetainDays = optional(number)
     autoDeletionRetainDays = optional(number)
   }))

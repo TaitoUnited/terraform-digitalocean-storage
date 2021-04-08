@@ -19,26 +19,26 @@ resource "digitalocean_spaces_bucket" "bucket" {
 
   name          = each.value.name
   region        = each.value.region
-  acl           = each.value.acl
+  acl           = coalesce(each.value.acl, "private")
   force_destroy = false
 
   dynamic "cors_rule" {
-    for_each = try(each.value.cors, null) != null ? each.value.cors : []
+    for_each = coalesce(each.value.corsRules, null) != null ? each.value.corsRules : []
     content {
-      allowed_origins = cors.value.allowedOrigins
-      allowed_methods = cors.value.allowedMethods
-      allowed_headers = cors.value.allowedHeaders
-      max_age_seconds = cors.value.maxAgeSeconds
+      allowed_origins = coalesce(cors_rule.value.allowedOrigins, ["GET","HEAD"])
+      allowed_methods = coalesce(cors_rule.value.allowedMethods, ["*"])
+      allowed_headers = coalesce(cors_rule.value.allowedHeaders, ["*"])
+      max_age_seconds = coalesce(cors_rule.value.maxAgeSeconds, 5)
     }
   }
 
   versioning {
-    enabled = each.value.versioningEnabled
+    enabled = coalesce(each.value.versioningEnabled, false)
   }
 
   # old version deletion
   lifecycle_rule {
-    enabled = try(each.value.versioningRetainDays, null) != null
+    enabled = coalesce(each.value.versioningRetainDays, null) != null
     noncurrent_version_expiration {
       days = each.value.versioningRetainDays
     }
@@ -46,7 +46,7 @@ resource "digitalocean_spaces_bucket" "bucket" {
 
   # autoDeletion
   lifecycle_rule {
-    enabled = try(each.value.autoDeletionRetainDays, null) != null
+    enabled = coalesce(each.value.autoDeletionRetainDays, null) != null
     expiration {
       days = each.value.autoDeletionRetainDays
     }
